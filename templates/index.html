@@ -4,11 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Video Conference Layout</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
     body {
         margin: 0;
         padding: 0;
-        font-family: sans-serif;
+        font-family: 'Roboto', sans-serif;
         display: flex;
         height: 100vh;
         background: #f0f0f0;
@@ -175,6 +176,38 @@
         height: 50px;
         background: #333;
     }
+
+    /* 按钮样式 */
+    button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        margin: 5px;
+        background-color: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #357ae8;
+    }
+
+    .material-icons {
+        margin-right: 8px;
+    }
+
+    /* 按钮容器样式 */
+    .audio-visualizer-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+    }
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -182,47 +215,76 @@
         const canvas = document.getElementById('audioVisualizer');
         const canvasCtx = canvas.getContext('2d');
 
-        // 请求访问用户的摄像头和麦克风
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then(stream => {
-                videoElement.srcObject = stream;
+        // 启用和关闭按钮
+        const enableButton = document.getElementById('enableButton');
+        const disableButton = document.getElementById('disableButton');
+        let mediaStream = null;
+        let audioContext = null;
+        let analyser = null;
+        let animationId = null;
 
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const analyser = audioContext.createAnalyser();
-                const source = audioContext.createMediaStreamSource(stream);
-                source.connect(analyser);
-                analyser.fftSize = 256;
+        enableButton.addEventListener('click', () => {
+            if (!mediaStream) {
+                navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                    .then(stream => {
+                        mediaStream = stream;
+                        videoElement.srcObject = stream;
 
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
+                        // 初始化音频上下文和分析器
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        analyser = audioContext.createAnalyser();
+                        const source = audioContext.createMediaStreamSource(stream);
+                        source.connect(analyser);
+                        analyser.fftSize = 256;
 
-                function draw() {
-                    requestAnimationFrame(draw);
+                        const bufferLength = analyser.frequencyBinCount;
+                        const dataArray = new Uint8Array(bufferLength);
 
-                    analyser.getByteFrequencyData(dataArray);
+                        function draw() {
+                            animationId = requestAnimationFrame(draw);
 
-                    canvasCtx.fillStyle = '#333';
-                    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+                            analyser.getByteFrequencyData(dataArray);
 
-                    const barWidth = (canvas.width / bufferLength) * 2.5;
-                    let barHeight;
-                    let x = 0;
+                            canvasCtx.fillStyle = '#333';
+                            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-                    for (let i = 0; i < bufferLength; i++) {
-                        barHeight = dataArray[i] / 2;
+                            const barWidth = (canvas.width / bufferLength) * 2.5;
+                            let barHeight;
+                            let x = 0;
 
-                        canvasCtx.fillStyle = 'rgb(50,' + (barHeight + 100) + ',50)';
-                        canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight);
+                            for (let i = 0; i < bufferLength; i++) {
+                                barHeight = dataArray[i] / 2;
 
-                        x += barWidth + 1;
-                    }
+                                canvasCtx.fillStyle = 'rgb(50,' + (barHeight + 100) + ',50)';
+                                canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight);
+
+                                x += barWidth + 1;
+                            }
+                        }
+
+                        draw();
+                    })
+                    .catch(error => {
+                        console.error('Error accessing media devices.', error);
+                    });
+            }
+        });
+
+        disableButton.addEventListener('click', () => {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                videoElement.srcObject = null;
+                mediaStream = null;
+
+                // 停止音频可视化
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
                 }
-
-                draw();
-            })
-            .catch(error => {
-                console.error('Error accessing media devices.', error);
-            });
+                if (audioContext) {
+                    audioContext.close();
+                }
+            }
+        });
     });
 </script>
 </head>
@@ -254,13 +316,23 @@
     <!-- 中间视频窗口，模拟两个参会者视频 -->
     <div class="video-participant">
         <img src="static/lukeliu.png" alt="数字人图片">
-        <div class="video-label">数字人</div>
+        <div class="video-label">Ryan销售提案专家</div>
     </div>
     <div class="video-participant">
         <video id="localVideo" autoplay muted></video>
         <div class="video-label">本地摄像头画面</div>
+        
     </div>
     <canvas id="audioVisualizer" class="audio-visualizer"></canvas>
+    <div class="audio-visualizer-container">
+        <button id="enableButton">
+            <i class="material-icons">videocam</i> 启用
+        </button>
+        <button id="disableButton">
+            <i class="material-icons">videocam_off</i> 关闭
+        </button>
+    </div>
+    
 </div>
 
 <div class="right-panel">
