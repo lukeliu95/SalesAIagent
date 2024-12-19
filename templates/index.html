@@ -48,6 +48,67 @@
             alert('请先整理要点');
             socket.emit('generate_ppt');
         });
+
+        const expertCards = document.querySelectorAll('.expert-card');
+        const videoParticipantImage = document.querySelector('.video-participant img');
+        const videoLabel = document.querySelector('.video-participant .video-label');
+
+        expertCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const expertImage = card.querySelector('img').src;
+                const expertName = card.querySelector('h3').textContent;
+
+                videoParticipantImage.src = expertImage;
+                videoLabel.textContent = expertName;
+            });
+        });
+
+        const inputField = document.querySelector('.input-area input');
+        const sendButton = document.querySelector('.input-area button');
+        const chatWindow = document.querySelector('.chat-window');
+
+        sendButton.addEventListener('click', () => {
+            const messageContent = inputField.value.trim();
+            if (messageContent) {
+                // 显示用户消息
+                const userMessageElement = document.createElement('div');
+                userMessageElement.classList.add('chat-message', 'left-align');
+                userMessageElement.innerHTML = `
+                    <div class="message-content">
+                        <strong>您:</strong>
+                        <span>${messageContent}</span>
+                    </div>
+                `;
+                chatWindow.appendChild(userMessageElement);
+                
+                // 发送消息到服务器
+                socket.emit('send_message', { text: messageContent });
+                inputField.value = ''; // 清空输入框
+                
+                // 滚动到底部
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        });
+
+        inputField.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+
+        // 接收服务器的响应并更新聊天窗口
+        socket.on('sales_response', (data) => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', 'right-align');
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    <strong>Ryan:</strong>
+                    <span>${data.text}</span>
+                </div>
+            `;
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight; // 滚动到底部
+        });
     });
 </script>
 <script>
