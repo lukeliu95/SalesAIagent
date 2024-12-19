@@ -10,80 +10,9 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const socket = io();
-        const chatWindow = document.querySelector('.chat-window');
-        const inputField = document.querySelector('.input-area input');
-        const sendButton = document.querySelector('.input-area button');
         const summarizeButton = document.getElementById('summarizeButton');
+        const generatePPTButton = document.getElementById('generatePPTButton');
         const chatSummary = document.querySelector('.chat-summary');
-        let typingIndicator = null;
-
-        function scrollToBottom() {
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-
-        function renderMessage(role, text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${role === 'assistant' ? 'right-align' : 'left-align'}`;
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    <strong>${role === 'user' ? '您:' : 'Ryan:'}</strong>
-                    <span>${text}</span>
-                </div>
-            `;
-            chatWindow.appendChild(messageDiv);
-            scrollToBottom();
-        }
-
-        function showTypingIndicator() {
-            if (!typingIndicator) {
-                typingIndicator = document.createElement('div');
-                typingIndicator.className = 'chat-message right-align';
-                typingIndicator.innerHTML = `
-                    <div class="message-content">
-                        <strong>Ryan:</strong>
-                        <span>正在输入...</span>
-                    </div>
-                `;
-                chatWindow.appendChild(typingIndicator);
-                scrollToBottom();
-            }
-        }
-
-        function hideTypingIndicator() {
-            if (typingIndicator) {
-                chatWindow.removeChild(typingIndicator);
-                typingIndicator = null;
-            }
-        }
-
-        function sendMessage() {
-            const text = inputField.value.trim();
-            if (text) {
-                renderMessage('user', text);
-                showTypingIndicator();
-                socket.emit('send_message', { text: text });
-                inputField.value = '';
-            }
-        }
-
-        sendButton.addEventListener('click', sendMessage);
-        inputField.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        socket.on('sales_response', (data) => {
-            hideTypingIndicator();
-            renderMessage('assistant', formatResponse(data.text));
-        });
-
-        function formatResponse(text) {
-            if (Array.isArray(text)) {
-                return text.map(item => `<li>${item}</li>`).join('');
-            }
-            return text;
-        }
 
         summarizeButton.addEventListener('click', () => {
             chatSummary.innerHTML = `
@@ -101,8 +30,23 @@
             }
             
             const summaryText = data.text;
-            chatSummary.innerHTML += summaryText;
-            chatSummary.scrollTop = chatSummary.scrollHeight;
+            
+            // 将 markdown 文本转换为 HTML
+            const formattedHtml = summaryText
+                .replace(/### (.*?)\n/g, '<h3 class="summary-title">$1</h3>')
+                .replace(/#### (.*?)\n/g, '<div class="summary-section"><h4>$1</h4><ul>')
+                .replace(/- (.*?)(?=\n)/g, '<li>$1</li>')
+                .replace(/####[^#]*?(?=####|$)/g, match => match + '</ul></div>');
+            
+            chatSummary.innerHTML = formattedHtml;
+            chatSummary.scrollTop = 0;  // 滚动到顶部
+        });
+
+        generatePPTButton.addEventListener('click', () => {
+            // 发送请求以生成PPT
+            //提示用户先整理要点
+            alert('请先整理要点');
+            socket.emit('generate_ppt');
         });
     });
 </script>
@@ -319,10 +263,11 @@
                 </button>
             </div>
             <div class="chat-summary">
-                
+                <p class="placeholder-text">与AI专家沟通完成后，整理主要内容</p>
             </div>
             <div class="bottom-actions">
-                <button id="summarizeButton">整理本轮会议</button>
+                <button id="summarizeButton" class="summarize-button">整理要点</button>
+                <button id="generatePPTButton" class="PPT-button">生成PPT</button>
             </div>
         </div>
     </div>

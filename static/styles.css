@@ -425,45 +425,102 @@ body {
     background: #357ae8;
 }
 
-/* 移除重复的样式定义 */
-.bottom-actions button {
+.bottom-actions #generatePPTButton {
     display: block;
+    height: 44px;
+    width: 100%;
+    max-width: 200px;
+    background: #35e64a;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.bottom-actions #generatePPTButton:hover {
+    background: #2de546;
 }
 
 .chat-summary {
     flex: 1;
-    padding: 20px;
+    padding: 25px;
     background: #fff;
     margin: 10px;
-    margin-bottom: 65px; /* 为底部按钮留出空间 */
+    margin-bottom: 65px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow-y: auto;
     font-size: 14px;
     line-height: 1.6;
+    position: relative;
+    min-height: 100px;
+}
+
+.summary-title {
+    color: #333;
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #4285f4;
 }
 
 .summary-section {
-    margin-bottom: 20px;
-}
-
-.summary-section h3 {
-    color: #4285f4;
-    font-size: 18px;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #eee;
+    margin-bottom: 25px;
 }
 
 .summary-section h4 {
-    color: #666;
+    color: #4285f4;
     font-size: 16px;
-    margin: 15px 0 8px 0;
+    font-weight: 500;
+    margin: 0 0 15px 0;
+    display: flex;
+    align-items: center;
 }
 
-.summary-section p {
-    margin: 8px 0;
-    color: #333;
+.summary-section h4::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: #4285f4;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+
+.summary-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.summary-section li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.summary-section li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    background: #4285f4;
+    border-radius: 50%;
+}
+
+/* 加载动画样式 */
+.loading-summary {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+}
+
+.loading-summary .spinner {
+    margin-bottom: 15px;
 }
 
 /* 底部功能区（例如会议选项） */
@@ -870,4 +927,15 @@ button:hover {
     align-items: flex-start;  /* 改为顶部对齐 */
     padding: 40px 20px;
     overflow-y: auto;
+} 
+
+.placeholder-text {
+    color: gray;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    font-style: italic;
 } 

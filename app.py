@@ -66,32 +66,30 @@ def handle_summarize_meeting():
         # 构建用于总结的提示
         summary_prompt = [
             {'role': 'system', 'content': '''请将以下对话整理成简洁的会议纪要，使用以下markdown格式：
-### 会议纪要
+## 与AI专家沟通的主要内容
 
-#### 主要讨论要点
+### 主要讨论要点
 (内容)
 
-#### 达成的共识
+### 达成的共识
 (内容)
 
-#### 后续行动计划
+### 后续行动计划
 (内容)'''},
             *filtered_history
         ]
         
-        # 使用流式输出
+        # 不使用流式输出
         completion = client.chat.completions.create(
             model="qwen-plus",
             messages=summary_prompt,
-            stream=True
+            stream=False
         )
         
-        for chunk in completion:
-            if hasattr(chunk.choices[0].delta, 'content'):
-                content = chunk.choices[0].delta.content
-                if content:
-                    emit('meeting_summary', {'text': content})
-                    
+        if completion.choices[0].message.content:
+            emit('meeting_summary', {'text': completion.choices[0].message.content})
+        else:
+            emit('meeting_summary', {'text': '整理会议内容时发生错误，请稍后重试。'})
     except Exception as e:
         print(f"Error during API call: {e}")
         emit('meeting_summary', {'text': '整理会议内容时发生错误，请稍后重试。'})
