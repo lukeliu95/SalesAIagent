@@ -49,22 +49,84 @@
             socket.emit('generate_ppt');
         });
 
+        // 添加AI专家提示词配置
+        const expertPrompts = {
+            'Ryan': {
+                role: '销售提案专家',
+                prompt: '我是Ryan,专为你服务的销售提案专家，擅长为潜在客户快速定制销售方案与提案。'
+            },
+            'Jason': {
+                role: '快速报价专家',
+                prompt: '我是Jason,是一位专业的快速报价专家，擅长在短时间内为客户提供准确的报价方案。'
+            },
+            'Emily': {
+                role: '客户问答专家',
+                prompt: '我是Emily,是一位专业的客户问答专家，擅长实时回答客户对产品、政策、技术等问题。'
+            },
+            'Michael': {
+                role: '竞品对比专家',
+                prompt: '我是Michael,是一位专业的竞品对比专家，擅长清晰展示产品优势并应对客户质疑。'
+            },
+            'Olivia': {
+                role: '客户案例赋能专家',
+                prompt: '我是Olivia,你是一位专业的客户案例专家，擅长用成功案例说服潜在客户。'
+            },
+            'William': {
+                role: '内部培训专家',
+                prompt: '我是William,你是一位专业的培训专家，擅长帮助销售团队提升谈判与沟通技巧。'
+            },
+            'Alex': {
+                role: '智能信息投递专家',
+                prompt: '我是Alex,你是一位专业的信息投递专家，擅长帮助客户进行内容自动化投递。'
+            },
+            'Frank': {
+                role: '企业关系专家',
+                prompt: '我是Frank,你是一位专业的企业关系专家，擅长分析企业间的关系网络。'
+            }
+        };
+
+        // 当前选择的专家
+        let currentExpert = 'Ryan';
+
+        // 修改专家卡片点击事件
         const expertCards = document.querySelectorAll('.expert-card');
         const videoParticipantImage = document.querySelector('.video-participant img');
         const videoLabel = document.querySelector('.video-participant .video-label');
 
         expertCards.forEach(card => {
             card.addEventListener('click', () => {
+                const expertName = card.querySelector('h3').textContent.split('（')[0];
                 const expertImage = card.querySelector('img').src;
-                const expertName = card.querySelector('h3').textContent;
-
+                
+                // 更新当前专家
+                currentExpert = expertName;
+                
+                // 更新视频区域显示
                 videoParticipantImage.src = expertImage;
-                videoLabel.textContent = expertName;
+                videoLabel.textContent = expertName + '（' + expertPrompts[expertName].role + '）';
+                
+                // 发送专家切换事件到服务器
+                socket.emit('switch_expert', {
+                    expert: expertName,
+                    prompt: expertPrompts[expertName].prompt
+                });
+                
+                // 添加切换提示消息
+                const switchMessage = document.createElement('div');
+                switchMessage.classList.add('chat-message', 'system-message');
+                switchMessage.innerHTML = `
+                    <div class="message-content">
+                        <span>已切换至 ${expertName}（${expertPrompts[expertName].role}）</span>
+                    </div>
+                `;
+                chatWindow.appendChild(switchMessage);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
             });
         });
 
-        const inputField = document.querySelector('.input-area input');
+        // 修改发送消息事件
         const sendButton = document.querySelector('.input-area button');
+        const inputField = document.querySelector('.input-area input');
         const chatWindow = document.querySelector('.chat-window');
 
         sendButton.addEventListener('click', () => {
@@ -81,33 +143,36 @@
                 `;
                 chatWindow.appendChild(userMessageElement);
                 
-                // 发送消息到服务器
-                socket.emit('send_message', { text: messageContent });
-                inputField.value = ''; // 清空输入框
+                // 发送消息到服务器，包含当前专家信息
+                socket.emit('send_message', { 
+                    text: messageContent,
+                    expert: currentExpert,
+                    prompt: expertPrompts[currentExpert].prompt
+                });
                 
-                // 滚动到底部
+                inputField.value = '';
                 chatWindow.scrollTop = chatWindow.scrollHeight;
             }
+        });
+
+        // 修改接收响应事件
+        socket.on('sales_response', (data) => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', 'right-align');
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    <strong>${currentExpert}:</strong>
+                    <span>${data.text}</span>
+                </div>
+            `;
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
         });
 
         inputField.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 sendButton.click();
             }
-        });
-
-        // 接收服务器的响应并更新聊天窗口
-        socket.on('sales_response', (data) => {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message', 'right-align');
-            messageElement.innerHTML = `
-                <div class="message-content">
-                    <strong>Ryan:</strong>
-                    <span>${data.text}</span>
-                </div>
-            `;
-            chatWindow.appendChild(messageElement);
-            chatWindow.scrollTop = chatWindow.scrollHeight; // 滚动到底部
         });
     });
 </script>
