@@ -1,0 +1,260 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    height: 100vh;
+    background: #f0f0f0;
+}
+
+/* 左侧聊天窗口区域 */
+.left-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-right: 1px solid #ccc;
+    position: relative;
+    height: 100vh;
+}
+
+/* 聊天内容区 */
+.chat-window {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f0f0f0;
+}
+
+.chat-message {
+    display: flex;
+    margin-bottom: 15px;
+    align-items: flex-start;
+}
+
+.chat-message.left-align {
+    justify-content: flex-start;
+}
+
+.chat-message.right-align {
+    justify-content: flex-end;
+}
+
+.message-content {
+    max-width: 60%;
+    padding: 10px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chat-message.left-align .message-content {
+    background: #e0e0e0;
+}
+
+.chat-message.right-align .message-content {
+    background: #a0e75a;
+}
+
+.chat-message strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: bold;
+}
+
+/* 输入区域固定在底部 */
+.input-area {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 15px 20px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 100;
+}
+
+.input-area input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+}
+
+.input-area input:focus {
+    border-color: #1677ff;
+}
+
+.input-area button {
+    padding: 12px 24px;
+    background: #1677ff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.input-area button:hover {
+    background: #0f62e6;
+}
+
+/* 中间视频会议区域 */
+.center-panel {
+    flex: 0 0 400px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #ccc;
+    background: #ffffff;
+    overflow-y: auto;
+}
+
+.video-participant {
+    position: relative;
+    margin-bottom: 1px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+}
+
+#localVideo {
+    width: 100%;
+    height: 300px;
+    background: #000;
+    object-fit: cover;
+}
+
+.video-label {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #fff;
+}
+
+.video-participant img {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: top;
+}
+
+.video-participant video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 右侧聊天摘要区域 */
+.right-panel {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+}
+
+.chat-summary {
+    flex: 1 1 auto;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f9f9f9;
+    border-bottom: 1px solid #ccc;
+}
+
+.summary-item {
+    margin-bottom: 15px;
+}
+
+.summary-item h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.summary-item p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* 底部功能区（例如会议选项） */
+.bottom-actions {
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #ccc;
+    text-align: center;
+}
+
+.bottom-actions button {
+    margin-right: 10px;
+    padding: 6px 12px;
+    background: #1677ff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.audio-visualizer {
+    width: 100%;
+    height: 50px;
+    background: #000;
+    margin: 0;
+    border-radius: 0px;
+}
+
+/* 按钮样式 */
+button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    margin: 5px;
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #357ae8;
+}
+
+.material-icons {
+    margin-right: 4px;
+}
+
+/* 按钮容器样式 */
+.audio-visualizer-container {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.audio-visualizer-container button {
+    margin: 0 5px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    background: #2196F3;
+    color: white;
+    cursor: pointer;
+}
+
+.audio-visualizer-container button:hover {
+    background: #1976D2;
+} 
