@@ -132,7 +132,7 @@
         {% for message in chat_history %}
             <div class="chat-message {% if message.role == 'assistant' %}right-align{% else %}left-align{% endif %}">
                 <div class="message-content">
-                    <strong>{% if message.role == 'user' %}用户:{% else %}Ryan:{% endif %}</strong>
+                    <strong>{% if message.role == 'user' %}您:{% else %}Ryan:{% endif %}</strong>
                     <span>{{ message.content | safe }}</span>
                 </div>
             </div>

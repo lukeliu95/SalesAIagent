@@ -246,7 +246,10 @@ button:hover {
 }
 
 .audio-visualizer-container button {
-    margin: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
     padding: 8px 15px;
     border: none;
     border-radius: 4px;
@@ -257,4 +260,8 @@ button:hover {
 
 .audio-visualizer-container button:hover {
     background: #1976D2;
+}
+
+.material-icons {
+    margin-right: 4px;
 } 
