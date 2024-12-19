@@ -790,3 +790,84 @@ button:hover {
     font-size: 14px;
     font-weight: 500;
 } 
+
+/* 专家列表样式 */
+.experts-list {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.experts-list h2 {
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+.experts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 10px;
+}
+
+.expert-card {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.expert-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.expert-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+}
+
+.expert-info {
+    flex: 1;
+}
+
+.expert-info h3 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.expert-title {
+    display: block;
+    color: #4285f4;
+    font-size: 14px;
+    margin: 4px 0;
+    font-weight: 500;
+}
+
+.expert-info p {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* 修改空聊天窗口样式 */
+.empty-chat-message {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;  /* 改为顶部对齐 */
+    padding: 40px 20px;
+    overflow-y: auto;
+} 
