@@ -13,6 +13,9 @@
         const chatWindow = document.querySelector('.chat-window');
         const inputField = document.querySelector('.input-area input');
         const sendButton = document.querySelector('.input-area button');
+        const summarizeButton = document.getElementById('summarizeButton');
+        const chatSummary = document.querySelector('.chat-summary');
+        let typingIndicator = null;
 
         function scrollToBottom() {
             chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -31,10 +34,33 @@
             scrollToBottom();
         }
 
+        function showTypingIndicator() {
+            if (!typingIndicator) {
+                typingIndicator = document.createElement('div');
+                typingIndicator.className = 'chat-message right-align';
+                typingIndicator.innerHTML = `
+                    <div class="message-content">
+                        <strong>Ryan:</strong>
+                        <span>正在输入...</span>
+                    </div>
+                `;
+                chatWindow.appendChild(typingIndicator);
+                scrollToBottom();
+            }
+        }
+
+        function hideTypingIndicator() {
+            if (typingIndicator) {
+                chatWindow.removeChild(typingIndicator);
+                typingIndicator = null;
+            }
+        }
+
         function sendMessage() {
             const text = inputField.value.trim();
             if (text) {
                 renderMessage('user', text);
+                showTypingIndicator();
                 socket.emit('send_message', { text: text });
                 inputField.value = '';
             }
@@ -48,7 +74,35 @@
         });
 
         socket.on('sales_response', (data) => {
-            renderMessage('assistant', data.text);
+            hideTypingIndicator();
+            renderMessage('assistant', formatResponse(data.text));
+        });
+
+        function formatResponse(text) {
+            if (Array.isArray(text)) {
+                return text.map(item => `<li>${item}</li>`).join('');
+            }
+            return text;
+        }
+
+        summarizeButton.addEventListener('click', () => {
+            chatSummary.innerHTML = `
+                <div class="loading-summary">
+                    <div class="spinner"></div>
+                    <p>正在整理会议内容...</p>
+                </div>
+            `;
+            socket.emit('summarize_meeting');
+        });
+
+        socket.on('meeting_summary', (data) => {
+            if (chatSummary.querySelector('.loading-summary')) {
+                chatSummary.innerHTML = '';
+            }
+            
+            const summaryText = data.text;
+            chatSummary.innerHTML += summaryText;
+            chatSummary.scrollTop = chatSummary.scrollHeight;
         });
     });
 </script>
@@ -126,68 +180,91 @@
 </script>
 </head>
 <body>
+    <header class="app-header">
+        <div class="header-left">
+            <div class="menu-section">
+                <a href="#" class="menu-item active">
+                    <div class="menu-icon">
+                        <i class="material-icons">dashboard</i>
+                    </div>
+                    <span>AI专家团队</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <div class="menu-icon">
+                        <i class="material-icons">business</i>
+                    </div>
+                    <span>企业数据库</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="logo-section">
+            <h1 class="logo"><img src="static/logo.png" alt="Magellan" width="120"></h1>
+            <span class="slogan">智能销售专家</span>
+        </div>
 
-<div class="left-panel">
-    <div class="chat-window">
-        {% for message in chat_history %}
-            <div class="chat-message {% if message.role == 'assistant' %}right-align{% else %}left-align{% endif %}">
-                <div class="message-content">
-                    <strong>{% if message.role == 'user' %}您:{% else %}Ryan:{% endif %}</strong>
-                    <span>{{ message.content | safe }}</span>
+        <div class="user-section">
+            <div class="user-avatar">
+                <img src="static/luke.png" width="35" alt="用户头像">
+            </div>
+            <span class="user-name">Luke</span>
+            <i class="material-icons dropdown-icon">arrow_drop_down</i>
+
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="left-panel">
+            <div class="chat-window">
+                {% if chat_history %}
+                    {% for message in chat_history %}
+                        <div class="chat-message {% if message.role == 'assistant' %}right-align{% else %}left-align{% endif %}">
+                            <div class="message-content">
+                                <strong>{% if message.role == 'user' %}您:{% else %}Ryan:{% endif %}</strong>
+                                <span>{{ message.content | safe }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-chat-message">
+                        <span>销售提案专家Ryan协助您完成工作</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="input-area">
+                <input type="text" placeholder="输入消息..." autofocus/>
+                <button>发送</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="video-section">
+                <div class="video-participant">
+                    <img src="static/lukeliu.png" alt="数字人图片">
+                    <div class="video-label">Ryan销售提案专家</div>
+                    <canvas id="salesAudioVisualizer" class="audio-visualizer"></canvas>
+                </div>
+                <div class="video-participant">
+                    <video id="localVideo" autoplay muted></video>
+                    <div class="video-label">本地摄像头画面</div>
+                    <canvas id="audioVisualizer" class="audio-visualizer"></canvas>
                 </div>
             </div>
-        {% endfor %}
-    </div>
-    <div class="input-area">
-        <input type="text" placeholder="输入消息..." autofocus/>
-        <button>发送</button>
-    </div>
-</div>
-
-<div class="center-panel">
-    <!-- 中间视频窗口，模拟两个参会者视频 -->
-    <div class="video-participant">
-        <img src="static/lukeliu.png" alt="数字人图片">
-        <div class="video-label">Ryan销售提案专家</div>
-    </div>
-    <div class="video-participant">
-        <video id="localVideo" autoplay muted></video>
-        <div class="video-label">本地摄像头画面</div>
-    </div>
-    <canvas id="audioVisualizer" class="audio-visualizer"></canvas>
-    <div class="audio-visualizer-container">
-        <button id="enableButton">
-            <i class="material-icons">videocam</i>开始视频会议
-        </button>
-        <button id="disableButton">
-            <i class="material-icons">videocam_off</i>关闭视频会议
-        </button>
-    </div>
-    
-</div>
-
-<div class="right-panel">
-    <!-- 右侧聊天内容摘要 -->
-    <div class="chat-summary">
-        <div class="summary-item">
-            <h4>ToDo</h4>
-            <p>稍后讨论业务进度</p>
-        </div>
-        <div class="summary-item">
-            <h4>Inspiring Point</h4>
-            <p>加快决策，尝试新市场渠道</p>
-        </div>
-        <div class="summary-item">
-            <h4>Key Point</h4>
-            <p>节约资源，采用可持续发展策略</p>
+            <div class="audio-visualizer-container">
+                <button id="enableButton">
+                    <i class="material-icons">videocam</i>开始视频会议
+                </button>
+                <button id="disableButton">
+                    <i class="material-icons">videocam_off</i>关闭视频会议
+                </button>
+            </div>
+            <div class="chat-summary">
+                
+            </div>
+            <div class="bottom-actions">
+                <button id="summarizeButton">整理本轮会议</button>
+            </div>
         </div>
     </div>
-    <div class="bottom-actions">
-        <button>共享屏幕</button>
-        <button>录制</button>
-        <button>设置</button>
-    </div>
-</div>
-
 </body>
 </html>
